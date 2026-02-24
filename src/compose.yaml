@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: ankane/pgvector
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: semantic_search
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  api:
+    build:
+      context: .
+      dockerfile: Api/Dockerfile
+    ports:
+      - "5041:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=semantic_search;Username=user;Password=password
+      - Ollama__Endpoint=http://ollama:11434
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - postgres
+      - ollama
+
+  web:
+    build:
+      context: web
+      args:
+        - VITE_API_URL=http://localhost:5041
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  ollama_data:
