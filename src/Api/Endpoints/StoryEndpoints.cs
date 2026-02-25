@@ -72,7 +72,7 @@ public static class StoryEndpoints
                         .Select(s => new SearchResult
                         {
                             Story = s,
-                            Score = (double)(EF.Functions.ToTsVector("english", (s.Title ?? "") + " " + (s.Summary ?? "") + " " + (s.Content ?? ""))
+                            Score = (double)(EF.Functions.ToTsVector("english", (s.Title ?? "") + " " + (s.Author ?? "") + " " + (s.Genre ?? "") + " " + s.PublishedYear + " " + (s.Summary ?? "") + " " + (s.Content ?? ""))
                                 .Rank(EF.Functions.WebSearchToTsQuery("english", query)) * 100)
                         })
                         .Where(x => x.Score > 0)
@@ -106,7 +106,7 @@ public static class StoryEndpoints
                     {
                         Story = s,
                         SemanticScore = 1 - s.Embedding!.CosineDistance(queryVector!),
-                        KeywordScore = (double)EF.Functions.ToTsVector("english", (s.Title ?? "") + " " + (s.Summary ?? "") + " " + (s.Content ?? ""))
+                        KeywordScore = (double)EF.Functions.ToTsVector("english", (s.Title ?? "") + " " + (s.Author ?? "") + " " + (s.Genre ?? "") + " " + s.PublishedYear + " " + (s.Summary ?? "") + " " + (s.Content ?? ""))
                             .Rank(EF.Functions.WebSearchToTsQuery("english", query))
                     })
                     .Select(x => new SearchResult

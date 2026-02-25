@@ -122,7 +122,29 @@ public class DatabaseSeeder
             }
 
             Console.WriteLine($"Reading content from {Path.GetFileName(fileName)}...");
-            var content = await File.ReadAllTextAsync(fileName);
+            var rawContent = await File.ReadAllTextAsync(fileName);
+            
+            // Remove title and metadata from content (first few lines)
+            var lines = rawContent.Split('\n').Select(l => l.TrimEnd('\r')).ToList();
+            // Typical structure: Title, Author, Year, Genre, [empty line], Content...
+            // We want to remove lines until we find the first significant paragraph after potential metadata.
+            // Based on files like 'The Garden Of Second Chances', it's:
+            // Line 0: Title
+            // Line 1: Author
+            // Line 2: Year
+            // Line 3: Genre
+            // Line 4: [Empty]
+            // Line 5: First line of story
+            int skipLines = 0;
+            if (lines.Count > 4 && lines[0] == meta.Title && lines[1] == meta.Author)
+            {
+                skipLines = 4;
+                if (lines.Count > skipLines && string.IsNullOrWhiteSpace(lines[skipLines]))
+                {
+                    skipLines++;
+                }
+            }
+            var content = string.Join("\n", lines.Skip(skipLines));
 
             Console.WriteLine("Generating summary...");
             var chat = new Chat(_ollama);
