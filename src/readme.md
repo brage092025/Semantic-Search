@@ -18,12 +18,23 @@ A modern .NET 10 + React + PostgreSQL (pgvector) application for semantic, keywo
 3.  **Access**:
     - **Frontend**: [http://localhost:5173](http://localhost:5173)
     - **API Swagger**: [http://localhost:5041/swagger](http://localhost:5041/swagger)
+    - **pgAdmin (DB Web UI)**: [http://localhost:5050](http://localhost:5050)
 
 ## 📊 Monitoring
 To see the progress of the model pulling and story seeding:
 ```bash
 docker compose logs -f api
 ```
+
+## 🗄️ Database Management
+You can manage the PostgreSQL database via **pgAdmin**:
+- **Login**: `admin@admin.com` / `admin`
+- **Add Server Connection**:
+  - **Host**: `postgres` (internal Docker name)
+  - **Port**: `5432`
+  - **Maintenance DB**: `semantic_search`
+  - **Username**: `user`
+  - **Password**: `password`
 
 
 ## 🛠 Tech Stack
