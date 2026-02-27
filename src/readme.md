@@ -39,7 +39,7 @@ You can manage the PostgreSQL database via **pgAdmin**:
 
 ## 🛠 Tech Stack
 
-- **Backend**: ASP.NET Core 10 (Minimal APIs)
+- **Backend**: ASP.NET Core 10 (Minimal APIs) with OllamaSharp
 - **Database**: PostgreSQL with `pgvector` for vector storage and HNSW indexing.
 - **AI/LLM**: Ollama (`nomic-embed-text` for embeddings, `gemma3:1b` for story summarization).
 - **Frontend**: React 18 + TypeScript + Vite + Lucide React.
@@ -60,6 +60,15 @@ The API supports three search modes via the `/api/stories/search` endpoint:
 - **Clean API**: `Embedding` vectors are excluded from JSON responses (`[JsonIgnore]`) to save bandwidth.
 - **Modern UI**: Created a clean React interface with search mode selection and story viewing modals.
 - **Migration Fixes**: Resolved issues with `pgvector` index dimensions and migration namespaces.
+
+## 🛠️ Improvements to be done
+
+- **Tweak full story display**: Remove title appearing a second time in the beginning of the full story text. 
+
+## 💡Ideas
+
+- **Add new stories?**: Added via web interface?
+
 
 ## 📂 Project Structure
 

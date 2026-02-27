@@ -1,12 +1,12 @@
 using System.Text.Json;
+using System.Security.Cryptography;
+using System.Text;
 using Api.Data;
 using Api.Models;
 using Microsoft.EntityFrameworkCore;
 using OllamaSharp;
 using OllamaSharp.Models;
 using Pgvector;
-using System.Linq;
-using System.Collections.Generic;
 
 namespace Api.Services;
 
@@ -15,148 +15,82 @@ public class DatabaseSeeder
     private readonly DataContext _context;
     private readonly OllamaApiClient _ollama;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<DatabaseSeeder> _logger;
 
-    public DatabaseSeeder(DataContext context, OllamaApiClient ollama, IConfiguration configuration)
+    public DatabaseSeeder(DataContext context, OllamaApiClient ollama, IConfiguration configuration, ILogger<DatabaseSeeder> logger)
     {
         _context = context;
         _ollama = ollama;
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task SeedAsync()
     {
-        Console.WriteLine("Starting DatabaseSeeder.SeedAsync...");
-        // Ensure models are available in Ollama
+        _logger.LogInformation("Starting DatabaseSeeder.SeedAsync...");
+        
         var embeddingModel = _configuration["Ollama:EmbeddingModel"] ?? "nomic-embed-text";
         var chatModel = _configuration["Ollama:ChatModel"] ?? "gemma3:1b";
 
-        Console.WriteLine($"Checking for models: {embeddingModel}, {chatModel}...");
         try
         {
-            Console.WriteLine($"Pulling {embeddingModel}...");
-            await foreach (var progress in _ollama.PullModelAsync(embeddingModel))
-            {
-                if (progress != null && !string.IsNullOrEmpty(progress.Status))
-                {
-                    Console.WriteLine($"- {embeddingModel}: {progress.Status}");
-                }
-            }
-
-            Console.WriteLine($"Pulling {chatModel}...");
-            await foreach (var progress in _ollama.PullModelAsync(chatModel))
-            {
-                if (progress != null && !string.IsNullOrEmpty(progress.Status))
-                {
-                    Console.WriteLine($"- {chatModel}: {progress.Status}");
-                }
-            }
-            Console.WriteLine("Models are ready.");
+            await EnsureModelsAvailable(embeddingModel, chatModel);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Warning: Could not pull models automatically: {ex.Message}");
+            _logger.LogWarning(ex, "Could not pull models automatically.");
         }
 
-        // Clear existing stories to ensure we get the new shorter summaries
-        if (await _context.Stories.AnyAsync())
-        {
-            Console.WriteLine("Clearing existing stories...");
-            _context.Stories.RemoveRange(_context.Stories);
-            await _context.SaveChangesAsync();
-        }
-
-        var currentDir = Directory.GetCurrentDirectory();
-        Console.WriteLine($"Current directory: {currentDir}");
-
-        var metadataPath = Path.Combine(currentDir, "..", "Stories", "metadata.json");
-        var storiesPath = Path.Combine(currentDir, "..", "Stories");
-
-        // Fallback for different execution contexts
+        var (metadataPath, storiesPath) = GetFilePaths();
         if (!File.Exists(metadataPath))
         {
-            metadataPath = Path.Combine(currentDir, "Stories", "metadata.json");
-            storiesPath = Path.Combine(currentDir, "Stories");
-        }
-
-        if (!File.Exists(metadataPath))
-        {
-            Console.WriteLine($"CRITICAL: Metadata not found at {metadataPath}");
-            // List files to help debug
-            try {
-                Console.WriteLine("Files in current directory:");
-                foreach(var f in Directory.GetFiles(currentDir)) Console.WriteLine($"  {Path.GetFileName(f)}");
-            } catch {}
+            _logger.LogError("Metadata not found at {Path}", metadataPath);
             return;
         }
 
-        Console.WriteLine($"Found metadata at {metadataPath}. Reading...");
         var metadataJson = await File.ReadAllTextAsync(metadataPath);
         var metadata = JsonSerializer.Deserialize<List<StoryMetadata>>(metadataJson, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         });
 
-        Console.WriteLine($"Loaded metadata for {metadata?.Count ?? 0} stories.");
+        if (metadata == null) return;
+
+        var existingStories = await _context.Stories.ToDictionaryAsync(s => s.Title!, s => s);
+        var files = Directory.GetFiles(storiesPath, "*.txt");
 
         _ollama.SelectedModel = chatModel;
 
-        foreach (var meta in metadata!)
+        foreach (var meta in metadata)
         {
-            Console.WriteLine($"Processing story: {meta.Title}...");
-            // Convert title to filename: "The Lighthouse Keeper" -> "The_Lighthouse_Keeper.txt"
-            var sanitizedTitle = new string(meta.Title!
-                .Replace("'", "")
-                .Select(c => char.IsLetterOrDigit(c) ? c : '_')
-                .ToArray());
-            
-            while (sanitizedTitle.Contains("__")) sanitizedTitle = sanitizedTitle.Replace("__", "_");
-            sanitizedTitle = sanitizedTitle.Trim('_');
-
-            var files = Directory.GetFiles(storiesPath, "*.txt");
+            var sanitizedTitle = SanitizeTitle(meta.Title!);
             var fileName = files.FirstOrDefault(f => Path.GetFileNameWithoutExtension(f).Equals(sanitizedTitle, StringComparison.OrdinalIgnoreCase));
 
             if (fileName == null)
             {
-                Console.WriteLine($"Story file not found for title: {meta.Title} (Expected {sanitizedTitle}.txt in {storiesPath})");
+                _logger.LogWarning("Story file not found for title: {Title}", meta.Title);
                 continue;
             }
 
-            Console.WriteLine($"Reading content from {Path.GetFileName(fileName)}...");
             var rawContent = await File.ReadAllTextAsync(fileName);
-            
-            // Remove title and metadata from content (first few lines)
-            var lines = rawContent.Split('\n').Select(l => l.TrimEnd('\r')).ToList();
-            // Typical structure: Title, Author, Year, Genre, [empty line], Content...
-            // We want to remove lines until we find the first significant paragraph after potential metadata.
-            // Based on files like 'The Garden Of Second Chances', it's:
-            // Line 0: Title
-            // Line 1: Author
-            // Line 2: Year
-            // Line 3: Genre
-            // Line 4: [Empty]
-            // Line 5: First line of story
-            int skipLines = 0;
-            if (lines.Count > 4 && lines[0] == meta.Title && lines[1] == meta.Author)
-            {
-                skipLines = 4;
-                if (lines.Count > skipLines && string.IsNullOrWhiteSpace(lines[skipLines]))
-                {
-                    skipLines++;
-                }
-            }
-            var content = string.Join("\n", lines.Skip(skipLines));
+            var content = ParseContent(rawContent, meta);
+            var contentHash = ComputeHash(content);
 
-            Console.WriteLine("Generating summary...");
-            var chat = new Chat(_ollama);
-            string summary = "";
-            await foreach (var response in chat.SendAsync($"Summarize the following story in exactly one or two sentences: {content}"))
+            if (existingStories.TryGetValue(meta.Title!, out var existing))
             {
-                summary += response;
+                if (existing.ContentHash == contentHash)
+                {
+                    _logger.LogInformation("Story '{Title}' is up to date. Skipping.", meta.Title);
+                    continue;
+                }
+                _logger.LogInformation("Story '{Title}' has changed. Updating...", meta.Title);
+                _context.Stories.Remove(existing);
             }
+
+            _logger.LogInformation("Processing new/updated story: {Title}...", meta.Title);
             
-            Console.WriteLine("Generating embedding...");
-            var embedRequest = new EmbedRequest { Model = embeddingModel, Input = new List<string> { content } };
-            var embeddingResult = await _ollama.EmbedAsync(embedRequest);
+            var summary = await GenerateSummaryAsync(content);
+            var embedding = await GenerateEmbeddingAsync(content, embeddingModel);
 
             var story = new Story
             {
@@ -166,15 +100,82 @@ public class DatabaseSeeder
                 PublishedYear = meta.PublishedYear,
                 Content = content,
                 Summary = summary,
-                Embedding = new Vector(embeddingResult.Embeddings.FirstOrDefault() ?? [])
+                ContentHash = contentHash,
+                Embedding = new Vector(embedding)
             };
 
             await _context.Stories.AddAsync(story);
-            Console.WriteLine($"Story '{meta.Title}' ready to be saved.");
         }
 
-        Console.WriteLine("Saving all stories to database...");
         await _context.SaveChangesAsync();
-        Console.WriteLine("Database seeding completed successfully.");
+        _logger.LogInformation("Database seeding completed successfully.");
+    }
+
+    private async Task EnsureModelsAvailable(string embed, string chat)
+    {
+        _logger.LogInformation("Ensuring models {Embed} and {Chat} are available...", embed, chat);
+        await foreach (var _ in _ollama.PullModelAsync(embed)) { }
+        await foreach (var _ in _ollama.PullModelAsync(chat)) { }
+    }
+
+    private (string metadata, string stories) GetFilePaths()
+    {
+        var currentDir = Directory.GetCurrentDirectory();
+        var paths = new[] { 
+            Path.Combine(currentDir, "..", "Stories"),
+            Path.Combine(currentDir, "Stories"),
+            Path.Combine(currentDir, "src", "Stories")
+        };
+
+        foreach (var p in paths)
+        {
+            var meta = Path.Combine(p, "metadata.json");
+            if (File.Exists(meta)) return (meta, p);
+        }
+
+        return (Path.Combine(currentDir, "metadata.json"), currentDir);
+    }
+
+    private string SanitizeTitle(string title)
+    {
+        var sanitized = new string(title.Replace("'", "").Select(c => char.IsLetterOrDigit(c) ? c : '_').ToArray());
+        while (sanitized.Contains("__")) sanitized = sanitized.Replace("__", "_");
+        return sanitized.Trim('_');
+    }
+
+    private string ParseContent(string raw, StoryMetadata meta)
+    {
+        var lines = raw.Split('\n').Select(l => l.TrimEnd('\r')).ToList();
+        // Skip metadata lines if they match the story title/author
+        int skip = 0;
+        if (lines.Count > 0 && lines[0].Trim().Equals(meta.Title, StringComparison.OrdinalIgnoreCase)) skip = 1;
+        if (lines.Count > skip && lines[skip].Trim().Equals(meta.Author, StringComparison.OrdinalIgnoreCase)) skip++;
+        // Skip subsequent empty lines
+        while (lines.Count > skip && string.IsNullOrWhiteSpace(lines[skip])) skip++;
+        
+        return string.Join("\n", lines.Skip(skip)).Trim();
+    }
+
+    private string ComputeHash(string text)
+    {
+        byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(text));
+        return Convert.ToHexString(bytes);
+    }
+
+    private async Task<string> GenerateSummaryAsync(string content)
+    {
+        var chat = new Chat(_ollama);
+        var summary = new StringBuilder();
+        await foreach (var response in chat.SendAsync($"Summarize the following story in exactly one or two sentences: {content}"))
+        {
+            summary.Append(response);
+        }
+        return summary.ToString().Trim();
+    }
+
+    private async Task<float[]> GenerateEmbeddingAsync(string content, string model)
+    {
+        var result = await _ollama.EmbedAsync(new EmbedRequest { Model = model, Input = new List<string> { content } });
+        return result.Embeddings?.FirstOrDefault() ?? Array.Empty<float>();
     }
 }

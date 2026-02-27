@@ -16,13 +16,22 @@ public class DataContext : DbContext
     {
         modelBuilder.HasPostgresExtension("vector");
 
-        modelBuilder.Entity<Story>()
-            .Property(s => s.Embedding)
-            .HasColumnType("vector(768)");
+        modelBuilder.Entity<Story>(entity =>
+        {
+            entity.Property(s => s.Embedding)
+                .HasColumnType("vector(768)");
 
-        modelBuilder.Entity<Story>()
-            .HasIndex(s => s.Embedding)
-            .HasMethod("hnsw")
-            .HasOperators("vector_cosine_ops");
+            entity.HasIndex(s => s.Embedding)
+                .HasMethod("hnsw")
+                .HasOperators("vector_cosine_ops");
+
+            // Generated tsvector column for Keyword Search
+            entity.HasGeneratedTsVectorColumn(
+                    s => s.SearchVector!,
+                    "english",
+                    s => new { s.Title, s.Author, s.Genre, s.Summary, s.Content })
+                .HasIndex(s => s.SearchVector)
+                .HasMethod("gin");
+        });
     }
 }

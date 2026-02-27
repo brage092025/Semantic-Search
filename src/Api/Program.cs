@@ -22,16 +22,17 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
-        builder =>
+        policy =>
         {
-            builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
         });
 });
 
 builder.Services.AddSingleton(new OllamaApiClient(builder.Configuration["Ollama:Endpoint"] ?? "http://localhost:11434"));
 builder.Services.AddTransient<DatabaseSeeder>();
+builder.Services.AddScoped<ISearchService, SearchService>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
@@ -43,9 +44,10 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try 
     {
-        Console.WriteLine("Wait for database to be ready and apply migrations...");
+        logger.LogInformation("Wait for database to be ready and apply migrations...");
         // Re-attempt a few times if the DB is still starting up
         int retries = 5;
         while (retries > 0)
@@ -53,13 +55,13 @@ using (var scope = app.Services.CreateScope())
             try
             {
                 await context.Database.MigrateAsync();
-                Console.WriteLine("Migrations applied successfully.");
+                logger.LogInformation("Migrations applied successfully.");
                 break;
             }
             catch (Exception ex)
             {
                 retries--;
-                Console.WriteLine($"Migration attempt failed ({5-retries}/5): {ex.Message}");
+                logger.LogWarning("Migration attempt failed ({RetryCount}/5): {ErrorMessage}", 5 - retries, ex.Message);
                 if (retries == 0) throw;
                 await Task.Delay(2000);
             }
@@ -67,11 +69,11 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"CRITICAL: Error applying migrations: {ex.Message}");
+        logger.LogCritical(ex, "Error applying migrations.");
         // Fallback for extreme cases to at least get the schema
         try 
         {
-            Console.WriteLine("Attempting EnsureCreated as fallback...");
+            logger.LogInformation("Attempting EnsureCreated as fallback...");
             await context.Database.EnsureCreatedAsync();
         }
         catch {}
@@ -83,23 +85,25 @@ _ = Task.Run(async () =>
 {
     using var scope = app.Services.CreateScope();
     var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
         await seeder.SeedAsync();
     }
     catch (Exception ex)
     {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
 });
 
 // Configure the HTTP request pipeline.
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
 
 app.MapStoryEndpoints();

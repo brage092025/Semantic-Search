@@ -3,6 +3,8 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+review.md
+Semantic Notes.txt
 # dotenv files
 .env
 .env.local
