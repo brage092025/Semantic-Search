@@ -20,6 +20,11 @@ A modern .NET 10 + React + PostgreSQL (pgvector) application for semantic, keywo
     - **API Swagger**: [http://localhost:5041/swagger](http://localhost:5041/swagger)
     - **pgAdmin (DB Web UI)**: [http://localhost:5050](http://localhost:5050)
 
+4. **Shut Down**: Close the container and stop everything:
+    ```bash
+    docker-compose down -v
+    ```
+
 ## 📊 Monitoring
 To see the progress of the model pulling and story seeding:
 ```bash
