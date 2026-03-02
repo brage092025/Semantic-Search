@@ -1,0 +1,78 @@
+.shelf-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.shelf-image-container {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: var(--radius-lg, 8px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.shelf-image-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.shelf-image-container.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.shelf-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: opacity 0.3s ease;
+}
+
+.shelf-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.shelf-overlay span {
+  background: var(--amber, #d97706);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 99px;
+  font-weight: 600;
+  font-size: 14px;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.shelf-image-container:hover .shelf-overlay {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.shelf-image-container:hover .shelf-overlay span {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.hotspot {
+  position: absolute;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  /* invisible but still interactable */
+  pointer-events: auto;
+  z-index: 5;
+}
+
+.hotspot:hover {
+  background: rgba(59, 130, 246, 0.2);
+  outline: 2px solid rgba(59, 130, 246, 0.4);
+}

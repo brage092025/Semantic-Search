@@ -55,7 +55,7 @@ public class SearchService : ISearchService
             .Select(s => new SearchResult
             {
                 Story = s,
-                Score = (double)s.SearchVector!.Rank(EF.Functions.WebSearchToTsQuery("english", query))
+                Score = (double)s.SearchVector!.Rank(EF.Functions.WebSearchToTsQuery("english", query)) * 100
             })
             .OrderByDescending(x => x.Score)
             .Take(limit)
@@ -72,7 +72,7 @@ public class SearchService : ISearchService
             .Select(s => new SearchResult
             {
                 Story = s,
-                Score = (double)(1 - s.Embedding!.CosineDistance(queryVector))
+                Score = (double)(1 - s.Embedding!.CosineDistance(queryVector)) * 100
             })
             .OrderByDescending(x => x.Score)
             .Take(limit)
@@ -111,15 +111,27 @@ public class SearchService : ISearchService
                 scores[id] = 1.0 / (k + i + 1);
         }
 
-        return scores
+        var results = scores
             .OrderByDescending(x => x.Value)
             .Take(limit)
             .Select(x => new SearchResult
             {
                 Story = storyMap[x.Key],
-                Score = x.Value * 100 // Scale for better visibility
+                Score = x.Value
             })
             .ToList();
+
+        // Normalize scores: Scale top result to 100, others relative
+        if (results.Any())
+        {
+            var maxScore = results.First().Score;
+            foreach (var res in results)
+            {
+                res.Score = (res.Score / maxScore) * 100;
+            }
+        }
+
+        return results;
     }
 
     private async Task<Vector?> GetEmbeddingAsync(string text)

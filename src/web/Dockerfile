@@ -1,7 +1,11 @@
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
+
+# Suppress npm update notices
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false
+
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 
 # Build argument for the API URL

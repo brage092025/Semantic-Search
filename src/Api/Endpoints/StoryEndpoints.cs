@@ -25,6 +25,22 @@ public static class StoryEndpoints
                 : Results.NotFound();
         });
 
+        group.MapGet("/random", async (DataContext context) =>
+        {
+            var count = await context.Stories.CountAsync();
+            if (count == 0) return Results.NotFound();
+            
+            var random = new Random();
+            var index = random.Next(count);
+            
+            var story = await context.Stories
+                .OrderBy(s => s.Id)
+                .Skip(index)
+                .FirstOrDefaultAsync();
+                
+            return story != null ? Results.Ok(story) : Results.NotFound();
+        });
+
         group.MapPost("/search", async ([FromBody] SearchRequest request, ISearchService searchService, ILogger<Program> logger) =>
         {
             try 
