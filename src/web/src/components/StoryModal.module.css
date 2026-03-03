@@ -102,9 +102,7 @@
 }
 
 .header {
-  margin-bottom: 24px;
-  flex-shrink: 0;
-  padding-right: 48px; /* Room for close button */
+  margin-bottom: 0;
 }
 
 .badges {
@@ -112,7 +110,7 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: 18px;
 }
 
 .genreBadge {
@@ -122,7 +120,6 @@
   text-transform: uppercase;
   padding: 4px 12px;
   border-radius: 99px;
-  white-space: nowrap;
 }
 
 .yearBadge {
@@ -134,37 +131,139 @@
   border-radius: 99px;
 }
 
+.idBadge {
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--text-faint);
+}
+
 .title {
   font-family: var(--font-display);
   font-size: clamp(24px, 4vw, 36px);
   font-weight: 900;
   color: var(--ink);
-  line-height: 1.2;
+  line-height: 1.1;
   letter-spacing: -0.02em;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .author {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 16px;
   font-style: italic;
   color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.scoreBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  background: #fff;
+  border: 1px solid var(--parchment-mid);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  margin-top: 12px;
+}
+
+.scoreLeft {
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.scoreTitle {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 4px;
+}
+
+.scoreValue {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--amber);
+  line-height: 1;
+}
+
+.scoreBarWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.scoreTrack {
+  height: 6px;
+  background: var(--parchment-dark);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.scoreFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--amber-light), var(--amber));
+  border-radius: 99px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scoreHint {
+  font-size: 11px;
+  color: var(--text-faint);
+  font-weight: 300;
+}
+
+.summaryBox {
+  background: #fff;
+  border-left: 3px solid var(--amber);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: 16px 20px;
+  margin-top: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.summaryLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 6px;
+}
+
+.summaryText {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 300;
+  line-height: 1.65;
+}
+
+.divider {
+  text-align: center;
+  color: var(--amber);
+  font-size: 20px;
+  margin: 20px 0;
+  opacity: 0.4;
 }
 
 .content {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 1.5;
   color: var(--text-body);
   overflow-y: auto;
   flex: 1;
-  padding-right: 12px;
-  margin-top: 10px;
+  padding-right: 8px;
 }
 
 .content p {
-  margin-bottom: 0.8em;
+  margin-bottom: 0.6em;
 }
 
 .noContent {

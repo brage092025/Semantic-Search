@@ -1,15 +1,14 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5041";
+const BASE_URL = "http://localhost:5041";
 
 // SearchMode enum values from your API
 export const SearchMode = {
-  Semantic: "Semantic",
-  Keyword: "Keyword",
-  Hybrid: "Hybrid",
+  Semantic: 0,
+  
 };
 
 /**
  * POST /api/stories/search
- * Body: { query: string, mode: SearchMode (string), limit: number }
+ * Body: { query: string, mode: SearchMode (int), limit: number }
  * Returns: Story[]
  *   { id, title, author, genre, publishedYear, summary, content }
  */
@@ -41,22 +40,6 @@ export async function getAllStories() {
 
   if (!res.ok) {
     throw new Error(`Failed to load stories: ${res.status} ${res.statusText}`);
-  }
-
-  return res.json();
-}
-
-/**
- * GET /api/stories/random
- * Returns: Story
- */
-export async function getRandomStory() {
-  const res = await fetch(`${BASE_URL}/api/stories/random`, {
-    headers: { accept: "application/json" },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Failed to load random story: ${res.status} ${res.statusText}`);
   }
 
   return res.json();

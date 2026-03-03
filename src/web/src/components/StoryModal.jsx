@@ -80,17 +80,6 @@ export default function StoryModal({ story, onClose }) {
         </button>
 
         <div className={styles.container}>
-          <header className={styles.header}>
-            <div className={styles.badges}>
-              <span className={styles.genreBadge} style={genreStyle}>
-                {genre}
-              </span>
-              <span className={styles.yearBadge}>{publishedYear}</span>
-            </div>
-            <h1 className={styles.title}>{title}</h1>
-            <p className={styles.author}>by {author}</p>
-          </header>
-
           <main className={styles.content}>
             {content ? (
               content.split("\n").map((para, i) =>
