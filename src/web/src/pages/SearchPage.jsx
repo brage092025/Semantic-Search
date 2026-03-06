@@ -174,7 +174,7 @@ export default function SearchPage() {
               <span />
               <span />
             </div>
-            <p>Searching the collectionâ€¦</p>
+            <p>Searching the collection…</p>
           </div>
         )}
 

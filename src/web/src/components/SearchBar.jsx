@@ -42,7 +42,7 @@ export default function SearchBar({ onSearch, loading, mode }) {
       </h1>
 
       <p className={styles.sub}>
-        Describe a theme, emotion, or situation â€” the engine finds the most
+        Describe a theme, emotion, or situation — the engine finds the most
         relevant stories from the collection.
       </p>
 
@@ -70,7 +70,7 @@ export default function SearchBar({ onSearch, loading, mode }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type Hereâ€¦"
+            placeholder="Type Here…"
             autoFocus
           />
 
@@ -80,7 +80,7 @@ export default function SearchBar({ onSearch, loading, mode }) {
               onClick={() => setQuery("")}
               aria-label="Clear"
             >
-              âœ•
+              ✕
             </button>
           )}
         </div>
