@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { searchStories, SearchMode } from "../api/stories";
 
 export function useSearch() {
@@ -9,23 +9,32 @@ export function useSearch() {
   const [lastQuery, setLastQuery] = useState("");
   const [mode, setMode] = useState(SearchMode.Semantic);
 
-  const search = useCallback(async (query, searchMode = mode, limit = 20) => {
-    if (!query.trim()) return;
-    setLoading(true);
-    setError(null);
-    setLastQuery(query);
+  const search = useCallback(
+    async (query, searchMode = mode, limit = 20) => {
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) return;
 
-    try {
-      const data = await searchStories({ query: query.trim(), mode: searchMode, limit });
-      setResults(data);
-    } catch (err) {
-      setError(err.message || "Something went wrong.");
-      setResults([]);
-    } finally {
-      setLoading(false);
-      setHasSearched(true);
-    }
-  }, [mode]);
+      setLoading(true);
+      setError(null);
+      setLastQuery(query);
+
+      try {
+        const data = await searchStories({
+          query: trimmedQuery,
+          mode: searchMode,
+          limit,
+        });
+        setResults(data);
+      } catch (err) {
+        setError(err.message || "Something went wrong.");
+        setResults([]);
+      } finally {
+        setLoading(false);
+        setHasSearched(true);
+      }
+    },
+    [mode]
+  );
 
   const reset = useCallback(() => {
     setResults([]);
@@ -34,5 +43,15 @@ export function useSearch() {
     setLastQuery("");
   }, []);
 
-  return { results, loading, error, hasSearched, lastQuery, search, reset, mode, setMode };
+  return {
+    results,
+    loading,
+    error,
+    hasSearched,
+    lastQuery,
+    search,
+    reset,
+    mode,
+    setMode,
+  };
 }

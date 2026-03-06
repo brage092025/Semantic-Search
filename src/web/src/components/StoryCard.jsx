@@ -14,39 +14,37 @@ const GENRE_COLORS = {
 };
 
 function getGenreStyle(genre) {
-  return (
-    GENRE_COLORS[genre] || {
-      bg: "var(--parchment-dark)",
-      color: "var(--text-muted)",
-    }
-  );
+  return GENRE_COLORS[genre] || {
+    bg: "var(--parchment-dark)",
+    color: "var(--text-muted)",
+  };
 }
 
-// Score is 0–100 float from the API (adjusted by +10 for display)
+// Score is 0â€“100 float from the API (adjusted by +10 for display)
 function scoreInfo(score) {
-  if (score >= 60)
-    return {
-      label: "Strong match",
-      bar: "#22c55e",
-      pct: Math.round(score, 100),
-    };
-  if (score >= 45)
-    return { label: "Good match", bar: "#eab308", pct: Math.round(score, 100) };
-  if (score >= 30)
-    return {
-      label: "Partial match",
-      bar: "#f97316",
-      pct: Math.round(score, 100),
-    };
-  return { label: "Weak match", bar: "#9ca3af", pct: Math.round(score, 100) };
+  const pct = Math.round(score, 100);
+
+  if (score >= 60) {
+    return { label: "Strong match", bar: "#22c55e", pct };
+  }
+
+  if (score >= 45) {
+    return { label: "Good match", bar: "#eab308", pct };
+  }
+
+  if (score >= 30) {
+    return { label: "Partial match", bar: "#f97316", pct };
+  }
+
+  return { label: "Weak match", bar: "#9ca3af", pct };
 }
 
 export default function StoryCard({ story, index, onClick }) {
-  const { id, title, author, genre, publishedYear, summary, score } = story;
+  const { title, author, genre, publishedYear, summary, score } = story;
   const genreStyle = getGenreStyle(genre);
   const hasScore = typeof score === "number";
   const adjustedScore = score + 20;
-  const si = hasScore ? scoreInfo(adjustedScore) : null;
+  const scoreMeta = hasScore ? scoreInfo(adjustedScore) : null;
 
   return (
     <article
@@ -74,11 +72,11 @@ export default function StoryCard({ story, index, onClick }) {
           <div className={styles.scoreTrack}>
             <div
               className={styles.scoreFill}
-              style={{ width: `${si.pct}%`, background: si.bar }}
+              style={{ width: `${scoreMeta.pct}%`, background: scoreMeta.bar }}
             />
           </div>
           <div className={styles.scoreMeta}>
-            <span className={styles.scoreLabel}>{si.label}</span>
+            <span className={styles.scoreLabel}>{scoreMeta.label}</span>
           </div>
         </div>
       )}
@@ -100,7 +98,7 @@ export default function StoryCard({ story, index, onClick }) {
           </svg>
         </span>
         {hasScore && (
-          <span className={styles.scoreNum} style={{ color: si.bar }}>
+          <span className={styles.scoreNum} style={{ color: scoreMeta.bar }}>
             {adjustedScore.toFixed(1)}%
           </span>
         )}
