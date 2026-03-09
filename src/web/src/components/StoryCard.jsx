@@ -1,7 +1,6 @@
 import styles from "./StoryCard.module.css";
 
 const SCORE_BAR_COLOR_HIGH = "#22c55e";
-const SCORE_BAR_COLOR_MIDDLE = "#b88f42";
 const SCORE_BAR_COLOR_LOW = "#c8860a";
 
 const GENRE_COLORS = {
@@ -18,21 +17,18 @@ const GENRE_COLORS = {
 };
 
 function getGenreStyle(genre) {
-  return GENRE_COLORS[genre] || {
-    bg: "var(--parchment-dark)",
-    color: "var(--text-muted)",
-  };
+  return (
+    GENRE_COLORS[genre] || {
+      bg: "var(--parchment-dark)",
+      color: "var(--text-muted)",
+    }
+  );
 }
 
-// Score is 0â€“100 float from the API (adjusted by +10 for display)
+// Score is 100 float from the API (adjusted by +10 for display)
 function scoreInfo(score) {
   const pct = Math.round(score, 100);
-  const bar =
-    score > 68
-      ? SCORE_BAR_COLOR_HIGH
-      : score > 50
-        ? SCORE_BAR_COLOR_MIDDLE
-        : SCORE_BAR_COLOR_LOW;
+  const bar = score <= 65 ? SCORE_BAR_COLOR_LOW : SCORE_BAR_COLOR_HIGH;
 
   if (score >= 60) {
     return { label: "Strong match", bar, pct };
