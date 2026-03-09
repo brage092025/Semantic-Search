@@ -1,5 +1,9 @@
 import styles from "./StoryCard.module.css";
 
+const SCORE_BAR_COLOR_HIGH = "#22c55e";
+const SCORE_BAR_COLOR_MIDDLE = "#b88f42";
+const SCORE_BAR_COLOR_LOW = "#c8860a";
+
 const GENRE_COLORS = {
   "Literary Fiction": { bg: "#f0f4ff", color: "#3730a3" },
   "Science Fiction": { bg: "#ecfdf5", color: "#065f46" },
@@ -23,20 +27,26 @@ function getGenreStyle(genre) {
 // Score is 0â€“100 float from the API (adjusted by +10 for display)
 function scoreInfo(score) {
   const pct = Math.round(score, 100);
+  const bar =
+    score > 68
+      ? SCORE_BAR_COLOR_HIGH
+      : score > 50
+        ? SCORE_BAR_COLOR_MIDDLE
+        : SCORE_BAR_COLOR_LOW;
 
   if (score >= 60) {
-    return { label: "Strong match", bar: "#22c55e", pct };
+    return { label: "Strong match", bar, pct };
   }
 
   if (score >= 45) {
-    return { label: "Good match", bar: "#eab308", pct };
+    return { label: "Good match", bar, pct };
   }
 
   if (score >= 30) {
-    return { label: "Partial match", bar: "#f97316", pct };
+    return { label: "Partial match", bar, pct };
   }
 
-  return { label: "Weak match", bar: "#9ca3af", pct };
+  return { label: "Weak match", bar, pct };
 }
 
 export default function StoryCard({ story, index, onClick }) {

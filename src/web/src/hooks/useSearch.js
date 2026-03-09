@@ -9,6 +9,7 @@ export function useSearch() {
   const [lastQuery, setLastQuery] = useState("");
   const [mode, setMode] = useState(SearchMode.Semantic);
 
+  // Centralized async search handler shared by page-level components.
   const search = useCallback(
     async (query, searchMode = mode, limit = 20) => {
       const trimmedQuery = query.trim();
@@ -24,6 +25,7 @@ export function useSearch() {
           mode: searchMode,
           limit,
         });
+        // Keep API order intact so "default" sorting reflects backend relevance.
         setResults(data);
       } catch (err) {
         setError(err.message || "Something went wrong.");
@@ -37,6 +39,7 @@ export function useSearch() {
   );
 
   const reset = useCallback(() => {
+    // Return UI state to its initial "no search yet" shape.
     setResults([]);
     setHasSearched(false);
     setError(null);

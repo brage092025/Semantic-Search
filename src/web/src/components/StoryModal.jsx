@@ -8,6 +8,7 @@ export default function StoryModal({ story, onClose }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Fetch full content only when caller passed a partial story payload.
     if (!story || !story.content) {
       getStoryById(story?.id)
         .then(setStoryData)
@@ -50,6 +51,8 @@ export default function StoryModal({ story, onClose }) {
     );
   }
 
+  const { title, author, publishedYear } = storyData;
+
   return (
     <div className={styles.backdrop} onClick={handleBackdropClick}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -70,8 +73,17 @@ export default function StoryModal({ story, onClose }) {
         </button>
 
         <div className={styles.container}>
+          <header className={styles.header}>
+            <div className={styles.badges}>
+              <span className={styles.yearBadge}>{publishedYear}</span>
+            </div>
+            <h2 className={styles.title}>{title}</h2>
+            <p className={styles.author}>by {author}</p>
+          </header>
+
           <main className={styles.content}>
             {storyData.content ? (
+              // Preserve intentional paragraph breaks from backend text.
               storyData.content.split("\n").map((para, i) =>
                 para.trim() ? <p key={i}>{para}</p> : <br key={i} />
               )

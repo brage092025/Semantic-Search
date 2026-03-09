@@ -12,20 +12,40 @@ const DEFAULT_HOTSPOTS = [
   { id: "h1", left: 12, top: 58 },
   { id: "h2", left: 36, top: 42 },
   { id: "h3", left: 60, top: 70 },
+  { id: "h4", left: 74, top: 36 },
+  { id: "h5", left: 86, top: 58 },
 ];
 
+// Clamp pointer coordinates to the image bounds.
 function clamp01(value) {
   return Math.max(0, Math.min(1, value));
 }
 
+// Convert normalized value (0..1) to a CSS percentage value.
 function toPercent(value01) {
   return Math.round(value01 * 100);
 }
 
+// Load persisted hotspots once during initial render.
 function readHotspotsFromStorage() {
   try {
     const raw = localStorage.getItem(HOTSPOTS_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : DEFAULT_HOTSPOTS;
+    if (!raw) return DEFAULT_HOTSPOTS;
+
+    const saved = JSON.parse(raw);
+    if (!Array.isArray(saved)) return DEFAULT_HOTSPOTS;
+
+    // Keep user-edited positions, but auto-append any new defaults by id.
+    const merged = [...saved];
+    const savedIds = new Set(saved.map((hotspot) => hotspot.id));
+
+    for (const hotspot of DEFAULT_HOTSPOTS) {
+      if (!savedIds.has(hotspot.id)) {
+        merged.push(hotspot);
+      }
+    }
+
+    return merged;
   } catch {
     return DEFAULT_HOTSPOTS;
   }
@@ -44,12 +64,14 @@ export default function SearchPage() {
   const [hotspots, setHotspots] = useState(readHotspotsFromStorage);
   const [isEditing, setIsEditing] = useState(false);
 
+  // If navigation provides a pre-filled query, run it on page load.
   useEffect(() => {
     if (location.state?.initialSearch) {
       search(location.state.initialSearch, mode);
     }
   }, [location.state?.initialSearch]);
 
+  // Scroll to the results section after each completed search.
   useEffect(() => {
     if (hasSearched && !loading && resultsRef.current) {
       resultsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -73,7 +95,7 @@ export default function SearchPage() {
   }, []);
 
   async function handleHotspotClick() {
-    // Prefer current search results, otherwise fetch all stories.
+    // Use current results first, then fall back to all stories.
     try {
       let pool = Array.isArray(results) && results.length ? results : null;
       if (!pool) {
@@ -174,7 +196,7 @@ export default function SearchPage() {
               <span />
               <span />
             </div>
-            <p>Searching the collection…</p>
+            <p>Searching the collection...</p>
           </div>
         )}
 

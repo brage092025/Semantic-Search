@@ -6,6 +6,7 @@ export const SearchMode = {
 };
 
 async function fetchJson(url, options, errorPrefix) {
+  // Shared fetch wrapper keeps status handling consistent across endpoints.
   const res = await fetch(url, options);
 
   if (!res.ok) {

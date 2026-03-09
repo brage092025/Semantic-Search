@@ -3,6 +3,7 @@ import StoryCard from "./StoryCard";
 import styles from "./ResultsGrid.module.css";
 
 function sortStories(stories, sortBy) {
+  // Sort in-place on a cloned array supplied by caller.
   switch (sortBy) {
     case "year_desc":
       stories.sort((a, b) => b.publishedYear - a.publishedYear);
@@ -31,13 +32,14 @@ export default function ResultsGrid({ results, query, onStoryClick }) {
   const [genreFilter, setGenreFilter] = useState("all");
   const [sortBy, setSortBy] = useState("default");
 
-  // Build unique genre list from results.
+  // Build a stable genre filter list from the current result set.
   const genres = useMemo(() => {
     const set = new Set(results.map((story) => story.genre).filter(Boolean));
     return ["all", ...Array.from(set).sort()];
   }, [results]);
 
   const filtered = useMemo(() => {
+    // Always clone before sorting to keep props immutable.
     let output = [...results];
 
     if (genreFilter !== "all") {

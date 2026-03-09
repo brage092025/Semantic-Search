@@ -41,7 +41,6 @@ html {
 body {
   background: var(--parchment);
   color: var(--text-body);
-  font-family: var(--font-body);
   font-weight: 300;
   line-height: 1.6;
   min-height: 100vh;

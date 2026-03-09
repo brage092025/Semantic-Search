@@ -17,11 +17,13 @@
 
 .sideImage {
   position: sticky;
-  top: 20px;
-  width: min(400px, 32vw);
+  top: 0;
+  width: calc(110vh * 0.75);
+  height: 108vh;
   flex-shrink: 0;
   aspect-ratio: 2 / 3;
-  max-height: calc(100vh - 20px);
+  max-height: none;
+  max-width: none;
   background: var(--parchment) url("/bilde.png") center center / contain
     no-repeat;
   overflow: hidden;
@@ -30,8 +32,8 @@
 .hotspot {
   position: absolute;
 
-  width: 32px;
-  height: 96px;
+  width: 96px;
+  height: 32px;
   border-radius: 4px;
 
   background: rgba(255, 255, 255, 0);
@@ -47,8 +49,9 @@
 
 .hotspot:hover {
   transform: translate(-50%, -50%) scale(1.06);
-  box-shadow: none;
-  background: rgba(255, 255, 255, 0);
+  box-shadow: 0 0 0 2px rgba(200, 134, 10, 0.45), 0 8px 18px rgba(0, 0, 0, 0.2);
+  background: rgba(200, 134, 10, 0.16);
+  border-color: rgba(200, 134, 10, 0.65);
   outline: none;
 }
 

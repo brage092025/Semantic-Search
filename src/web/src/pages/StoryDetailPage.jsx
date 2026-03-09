@@ -28,6 +28,7 @@ function renderContent(content) {
     return <p className={styles.noContent}>Full content not available.</p>;
   }
 
+  // Keep backend line breaks as visual paragraph spacing in the reader view.
   return content.split("\n").map((para, i) =>
     para.trim() ? <p key={i}>{para}</p> : <br key={i} />
   );
@@ -44,6 +45,7 @@ export default function StoryDetailPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Direct visits to /story/:id do not carry router state, so fetch by id.
     if (!state?.story) {
       getStoryById(id)
         .then(setStory)
