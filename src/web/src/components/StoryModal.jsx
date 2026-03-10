@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getStoryById } from "../api/stories";
 import styles from "./StoryModal.module.css";
 
-export default function StoryModal({ story, onClose }) {
+export default function StoryModal({ story, onClose, onGenreClick }) {
   const [storyData, setStoryData] = useState(story);
   const [loading, setLoading] = useState(!story);
   const [error, setError] = useState(null);
@@ -42,7 +42,7 @@ export default function StoryModal({ story, onClose }) {
       <div className={styles.backdrop} onClick={handleBackdropClick}>
         <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
           <div className={styles.center}>
-            <span className={styles.notFoundIcon}>â§</span>
+            <span className={styles.notFoundIcon}></span>
             <h2>Story not found</h2>
             <p>{error || "This story isn't available."}</p>
           </div>
@@ -51,7 +51,7 @@ export default function StoryModal({ story, onClose }) {
     );
   }
 
-  const { title, author, publishedYear } = storyData;
+  const { title, author, publishedYear, genre } = storyData;
 
   return (
     <div className={styles.backdrop} onClick={handleBackdropClick}>
@@ -79,14 +79,23 @@ export default function StoryModal({ story, onClose }) {
             </div>
             <h2 className={styles.title}>{title}</h2>
             <p className={styles.author}>by {author}</p>
+            <button
+              type="button"
+              className={styles.genreBadge}
+              onClick={() => onGenreClick?.(genre)}
+            >
+              {genre}
+            </button>
           </header>
 
           <main className={styles.content}>
             {storyData.content ? (
               // Preserve intentional paragraph breaks from backend text.
-              storyData.content.split("\n").map((para, i) =>
-                para.trim() ? <p key={i}>{para}</p> : <br key={i} />
-              )
+              storyData.content
+                .split("\n")
+                .map((para, i) =>
+                  para.trim() ? <p key={i}>{para}</p> : <br key={i} />,
+                )
             ) : (
               <p className={styles.noContent}>Full content not available.</p>
             )}

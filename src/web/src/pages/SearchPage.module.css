@@ -28,6 +28,50 @@
     no-repeat;
   overflow: hidden;
   border-radius: 6px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: center;
+}
+
+.cabinetCta {
+  margin-top: 10px;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.bookshelfHotspot {
+  position: absolute;
+  left: calc(50% - 2px);
+  top: 45.5%;
+  width: calc(48% - 10px);
+  height: 79%;
+  transform: translate(-50%, -50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.bookshelfHotspot:hover {
+  box-shadow:
+    inset 8px 0 12px rgba(200, 134, 10, 0.45),
+    inset -8px 0 12px rgba(200, 134, 10, 0.45);
+  border-radius: 6px;
+}
+
+.bookshelfHotspot:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
 }
 .hotspot {
   position: absolute;

@@ -28,9 +28,17 @@ function sortStories(stories, sortBy) {
   return stories;
 }
 
-export default function ResultsGrid({ results, query, onStoryClick }) {
-  const [genreFilter, setGenreFilter] = useState("all");
+export default function ResultsGrid({
+  results,
+  query,
+  onStoryClick,
+  genreFilter: genreFilterProp,
+  onGenreChange,
+}) {
+  const [genreFilterInternal, setGenreFilterInternal] = useState("all");
   const [sortBy, setSortBy] = useState("default");
+  const genreFilter = genreFilterProp ?? genreFilterInternal;
+  const setGenreFilter = onGenreChange ?? setGenreFilterInternal;
 
   // Build a stable genre filter list from the current result set.
   const genres = useMemo(() => {
