@@ -9,16 +9,26 @@ import styles from "./SearchPage.module.css";
 
 export default function SearchPage() {
   const location = useLocation();
-  const { results, loading, error, hasSearched, lastQuery, search, mode, setMode } =
-    useSearch();
+  const {
+    results,
+    loading,
+    error,
+    hasSearched,
+    lastQuery,
+    search,
+    mode,
+    setMode,
+  } = useSearch();
 
   const resultsRef = useRef(null);
   const [selectedStory, setSelectedStory] = useState(null);
   const [genreFilter, setGenreFilter] = useState("all");
+  const [showTopButton, setShowTopButton] = useState(false);
 
   // If navigation provides a pre-filled query, run it on page load.
   useEffect(() => {
     if (location.state?.initialSearch) {
+      setGenreFilter("all");
       search(location.state.initialSearch, mode);
     }
   }, [location.state?.initialSearch]);
@@ -30,10 +40,25 @@ export default function SearchPage() {
     }
   }, [hasSearched, loading]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowTopButton(window.scrollY > 240);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   function handleGenreClick(genre) {
     if (!genre) return;
     setGenreFilter(genre);
     setSelectedStory(null);
+  }
+
+  function handleSearch(query, searchMode) {
+    setGenreFilter("all");
+    search(query, searchMode);
   }
 
   async function handleCabinetClick() {
@@ -53,12 +78,16 @@ export default function SearchPage() {
     }
   }
 
+  function handleScrollToTop() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   return (
     <div className={styles.pageWithImage}>
       <div className={styles.contentArea}>
         <div className={styles.heroWrap}>
           <SearchBar
-            onSearch={search}
+            onSearch={handleSearch}
             loading={loading}
             mode={mode}
             onModeChange={setMode}
@@ -101,10 +130,20 @@ export default function SearchPage() {
             onGenreClick={handleGenreClick}
           />
         )}
+        <button
+          type="button"
+          className={`${styles.toTop} ${showTopButton ? styles.toTopVisible : ""}`}
+          onClick={handleScrollToTop}
+          aria-label="Back to top"
+        >
+          &#129093;
+        </button>
       </div>
 
       <div className={styles.sideImage} aria-hidden="true">
-        <span className={styles.cabinetCta}>Tap the Bookshelf for a Surprise Tale!</span>
+        <span className={styles.cabinetCta}>
+          Tap the Bookshelf for a Surprise Tale!
+        </span>
         <button
           type="button"
           className={styles.bookshelfHotspot}

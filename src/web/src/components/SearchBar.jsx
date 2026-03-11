@@ -38,7 +38,7 @@ export default function SearchBar({ onSearch, loading, mode }) {
       <h1 className={styles.headline}>
         Find stories by
         <br />
-        <em>meaning, not keywords</em>
+        <em>meaning or keywords</em>
       </h1>
 
       <p className={styles.sub}>

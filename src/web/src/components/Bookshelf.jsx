@@ -15,7 +15,6 @@ export default function Bookshelf() {
       <div className="shelf-container">
         <img src="/bilde.png" className="shelf-image" alt="Bookshelf" />
 
-   
         <div
           className="hotspot"
           style={{ top: "10%", left: "53%", width: "10%", height: "10%" }}
@@ -40,7 +39,6 @@ export default function Bookshelf() {
           onClick={() => handleClick("")}
         />
 
-     
         <div
           className="hotspot"
           style={{ top: "28%", left: "8%", width: "28%", height: "5%" }}
@@ -91,7 +89,7 @@ export default function Bookshelf() {
             <p>{story}</p>
           </div>
         )}
-      </div>  
+      </div>
     </div>
   );
 }

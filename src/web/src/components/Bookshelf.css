@@ -1,42 +1,39 @@
 .shelf-wrapper {
+  width: 100%;
   display: flex;
   justify-content: center;
+  padding: 40px 20px;
 }
 
 .shelf-container {
   position: relative;
-  width: fit-content;  
+  width: 80%;
+  max-width: 900px;
 }
 
 .shelf-image {
-  display: block;
   width: 100%;
   height: auto;
-  pointer-events: none;
+  display: block;
 }
 
 .hotspot {
   position: absolute;
+  background: rgba(255, 255, 255, 0);
   cursor: pointer;
-  z-index: 10;
-  background: transparent;
-  outline: none;
 }
-
 
 .hotspot:focus,
 .hotspot:focus-visible,
 .hotspot:active {
   outline: none;
+  box-shadow: 0 0 0 2px rgba(200, 134, 10, 0.6);
 }
 
 .story-box {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 12px;
-  border-radius: 6px;
-  max-width: 320px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 8px;
+  background: #f8f8f8;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
