@@ -70,7 +70,7 @@
   padding: 10px 14px;
   border-radius: 999px;
   border: 1px solid var(--parchment-mid);
-  background: rgba(255, 255, 255, 0.92);
+  background: white;
   color: var(--ink);
   font-family: var(--font-display);
   font-size: 12px;

@@ -1,8 +1,13 @@
+// React hooks for state and lifecycle.
 import { useEffect, useState } from "react";
+// Router hooks for navigation and route params.
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+// API helper to fetch a story by its id.
 import { getStoryById } from "../api/stories";
+// CSS module for the detail page.
 import styles from "./StoryDetailPage.module.css";
 
+// Map genre names to badge background/text colors.
 const GENRE_COLORS = {
   "Literary Fiction": { bg: "#f0f4ff", color: "#3730a3" },
   "Science Fiction": { bg: "#ecfdf5", color: "#065f46" },
@@ -16,6 +21,7 @@ const GENRE_COLORS = {
   Humor: { bg: "#fef9c3", color: "#713f12" },
 };
 
+// Resolve a genre badge style, falling back to neutral colors.
 function getGenreStyle(genre) {
   return GENRE_COLORS[genre] || {
     bg: "var(--parchment-dark)",
@@ -23,7 +29,9 @@ function getGenreStyle(genre) {
   };
 }
 
+// Convert story content into paragraphs and line breaks.
 function renderContent(content) {
+  // If no content is available, show a placeholder.
   if (!content) {
     return <p className={styles.noContent}>Full content not available.</p>;
   }
@@ -34,16 +42,24 @@ function renderContent(content) {
   );
 }
 
+// Story detail page fetches and displays one story.
 export default function StoryDetailPage() {
+  // Imperative navigation helper.
   const navigate = useNavigate();
+  // Location may include preloaded story state.
   const { state } = useLocation();
+  // URL param with the story id.
   const { id } = useParams();
 
   // Use story from router state if available, otherwise fetch from API.
+  // Story data is initialized from router state when present.
   const [story, setStory] = useState(state?.story || null);
+  // Loading state starts true if we need to fetch data.
   const [loading, setLoading] = useState(!state?.story);
+  // Error message for failed fetches.
   const [error, setError] = useState(null);
 
+  // Fetch story data when arriving without router state.
   useEffect(() => {
     // Direct visits to /story/:id do not carry router state, so fetch by id.
     if (!state?.story) {
@@ -52,8 +68,10 @@ export default function StoryDetailPage() {
         .catch((err) => setError(err.message))
         .finally(() => setLoading(false));
     }
+    // Re-run if id or presence of router state changes.
   }, [id, state?.story]);
 
+  // Loading view while data is being fetched.
   if (loading) {
     return (
       <div className={styles.center}>
@@ -63,6 +81,7 @@ export default function StoryDetailPage() {
     );
   }
 
+  // Error view when the story is missing or fetch failed.
   if (error || !story) {
     return (
       <div className={styles.notFound}>
@@ -76,11 +95,14 @@ export default function StoryDetailPage() {
     );
   }
 
+  // Compute styling for the genre badge.
   const genreStyle = getGenreStyle(story.genre);
 
+  // Main detail page layout.
   return (
     <div className={styles.page}>
       <div className={styles.container}>
+        {/* Back button to previous page in history. */}
         <button className={styles.back} onClick={() => navigate(-1)}>
           <svg
             width="16"
@@ -99,19 +121,24 @@ export default function StoryDetailPage() {
 
         <header className={styles.header}>
           <div className={styles.badges}>
+            {/* Genre badge uses dynamic colors. */}
             <span
               className={styles.genreBadge}
               style={{ background: genreStyle.bg, color: genreStyle.color }}
             >
               {story.genre}
             </span>
+            {/* Published year badge. */}
             <span className={styles.yearBadge}>{story.publishedYear}</span>
+            {/* Story id badge for reference. */}
             <span className={styles.idBadge}>Story #{id}</span>
           </div>
 
+          {/* Story title and author. */}
           <h1 className={styles.title}>{story.title}</h1>
           <p className={styles.author}>by {story.author}</p>
 
+          {/* Optional summary box. */}
           {story.summary && (
             <div className={styles.summaryBox}>
               <p className={styles.summaryLabel}>Summary</p>
@@ -119,6 +146,7 @@ export default function StoryDetailPage() {
             </div>
           )}
 
+          {/* Optional score section when available. */}
           {typeof story.score === "number" && (
             <div className={styles.scoreBox}>
               <div className={styles.scoreLeft}>
@@ -141,10 +169,12 @@ export default function StoryDetailPage() {
           )}
         </header>
 
+        {/* Decorative divider between header and content. */}
         <div className={styles.divider}>
           <span>â§</span>
         </div>
 
+        {/* Render story content with paragraph spacing. */}
         <main className={styles.content}>{renderContent(story.content)}</main>
       </div>
     </div>
