@@ -23,10 +23,12 @@ const GENRE_COLORS = {
 
 // Resolve a genre badge style, falling back to neutral colors.
 function getGenreStyle(genre) {
-  return GENRE_COLORS[genre] || {
-    bg: "var(--parchment-dark)",
-    color: "var(--text-muted)",
-  };
+  return (
+    GENRE_COLORS[genre] || {
+      bg: "var(--parchment-dark)",
+      color: "var(--text-muted)",
+    }
+  );
 }
 
 // Convert story content into paragraphs and line breaks.
@@ -37,9 +39,9 @@ function renderContent(content) {
   }
 
   // Keep backend line breaks as visual paragraph spacing in the reader view.
-  return content.split("\n").map((para, i) =>
-    para.trim() ? <p key={i}>{para}</p> : <br key={i} />
-  );
+  return content
+    .split("\n")
+    .map((para, i) => (para.trim() ? <p key={i}>{para}</p> : <br key={i} />));
 }
 
 // Story detail page fetches and displays one story.
